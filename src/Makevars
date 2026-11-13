@@ -1,0 +1,20 @@
+# src/Makevars (Linux/macOS)
+#
+# Requests OpenMP the portable, CRAN-accepted way: R's own configure step
+# already determined the right OpenMP flag for this platform/compiler (or
+# determined that none is available, e.g. plain Xcode clang on macOS
+# without libomp installed) and exposes it as SHLIB_OPENMP_CFLAGS -- using
+# that variable, rather than hand-rolling `-fopenmp`, means this Makevars
+# does the right thing (including "nothing") on every CRAN check machine
+# without any of the try/retry logic the loose-script version of these
+# kernels needed at runtime (.load_bifactor_kernel()'s "try -fopenmp,
+# fall back to single-threaded" dance is no longer necessary at all once
+# this is a real package -- R CMD INSTALL compiles src/*.c once, up front).
+#
+# Both bifactor_kernel.c and margin1factor_kernel.c's #pragma omp lines
+# are already guarded by `#ifdef _OPENMP`, so this is safe even on a
+# platform where SHLIB_OPENMP_CFLAGS resolves to empty: the pragmas are
+# then simply ignored and the code compiles single-threaded, exactly as
+# it already does when OpenMP isn't available.
+PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CFLAGS)
